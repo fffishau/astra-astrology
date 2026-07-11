@@ -89,7 +89,15 @@ export async function calculateChart(
   const { SwissEphemeris } = await import("@swisseph/browser");
   const swe = new SwissEphemeris();
   await swe.init();
-  const jd = swe.dateToJulianDay(utc);
+  const jd = swe.julianDay(
+    utc.getUTCFullYear(),
+    utc.getUTCMonth() + 1,
+    utc.getUTCDate(),
+    utc.getUTCHours() +
+      utc.getUTCMinutes() / 60 +
+      utc.getUTCSeconds() / 3600 +
+      utc.getUTCMilliseconds() / 3_600_000,
+  );
   const houses = swe.calculateHouses(
     jd,
     latitude,
