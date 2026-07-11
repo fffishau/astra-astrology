@@ -1,4 +1,3 @@
-import { SwissEphemeris } from "@swisseph/browser";
 import { HouseSystem, Planet } from "@swisseph/core";
 
 export type ChartPoint = {
@@ -84,6 +83,10 @@ export async function calculateChart(
   longitude: number,
   timezone: string,
 ): Promise<ChartData> {
+  // Load the WebAssembly engine only when a chart is requested. Keeping it out
+  // of the initial client bundle prevents a WASM initialization failure from
+  // taking down the entire page during hydration on hosted deployments.
+  const { SwissEphemeris } = await import("@swisseph/browser");
   const swe = new SwissEphemeris();
   await swe.init();
   const jd = swe.dateToJulianDay(utc);
