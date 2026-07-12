@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import * as OpenCC from "opencc-js";
 import tzlookup from "tz-lookup";
 const Icon = ({ children, className = "" }: { children: string; className?: string }) => <span className={`text-icon ${className}`} aria-hidden="true">{children}</span>;
 const CalendarDays = () => <Icon>□</Icon>;
@@ -121,6 +122,7 @@ function Wheel({ chart }: { chart: ChartData }) {
   );
 }
 export default function AstraApp() {
+  const [language, setLanguage] = useState<"zh-Hant" | "zh-Hans">("zh-Hant");
   const [date, setDate] = useState("1993-07-21"),
     [time, setTime] = useState("14:35"),
     [gender, setGender] = useState("不透露"),
@@ -134,6 +136,30 @@ export default function AstraApp() {
     [loading, setLoading] = useState(false),
     [answer, setAnswer] = useState(""),
     [error, setError] = useState("");
+  useEffect(() => {
+    const saved = localStorage.getItem("astra-language") === "zh-Hans" ? "zh-Hans" : "zh-Hant";
+    setLanguage(saved);
+    if (saved !== "zh-Hans") return;
+    const convert = OpenCC.Converter({ from: "tw", to: "cn" });
+    const translate = (root: Node) => {
+      if (root.nodeType === Node.TEXT_NODE && root.textContent) {
+        root.textContent = convert(root.textContent);
+        return;
+      }
+      if (!(root instanceof HTMLElement) || ["SCRIPT", "STYLE", "TEXTAREA", "INPUT"].includes(root.tagName)) return;
+      root.childNodes.forEach(translate);
+      if (root.hasAttribute("placeholder")) root.setAttribute("placeholder", convert(root.getAttribute("placeholder") || ""));
+      if (root.hasAttribute("aria-label")) root.setAttribute("aria-label", convert(root.getAttribute("aria-label") || ""));
+    };
+    translate(document.body);
+    const observer = new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach(translate)));
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+  function switchLanguage(next: "zh-Hant" | "zh-Hans") {
+    localStorage.setItem("astra-language", next);
+    location.reload();
+  }
   useEffect(() => {
     if (query.length < 2 || place?.label === query) {
       setPlaces([]);
@@ -181,6 +207,7 @@ export default function AstraApp() {
             gender,
             focus,
             apiKey,
+            language,
           }),
         }),
         d = await r.json();
@@ -214,6 +241,10 @@ export default function AstraApp() {
           <ShieldCheck />
           Swiss Ephemeris · Placidus
         </span>
+        <div className="language-switch" role="group" aria-label="語言選擇">
+          <button type="button" className={language === "zh-Hant" ? "active" : ""} onClick={() => switchLanguage("zh-Hant")}>繁體</button>
+          <button type="button" className={language === "zh-Hans" ? "active" : ""} onClick={() => switchLanguage("zh-Hans")}>简体</button>
+        </div>
       </header>
       <div className="workspace">
         <section className="input-panel" aria-labelledby="birth-title">

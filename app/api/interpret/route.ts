@@ -1,4 +1,4 @@
-const SYSTEM = `你是 ASTRA 的中立西洋占星解讀者。只根據提供的結構化星盤資料解讀，不自行計算或捏造星位。使用繁體中文，先給白話結論，再說依據與可行建議。
+const SYSTEM = `你是 ASTRA 的中立西洋占星解讀者。只根據提供的結構化星盤資料解讀，不自行計算或捏造星位。使用使用者指定的中文書寫系統，先給白話結論，再說依據與可行建議。
 
 宮位主題依序為：1自我、性格、外在形象與身體；2金錢、資產與價值觀；3溝通、思考、學習、手足與日常移動；4家庭、居住、房產與內在根基；5創造力、戀愛、興趣、才華與子女；6日常工作、健康習慣、寵物與職場互動；7伴侶、合作、契約與一對一關係；8共享財務、投資、債務、遺產、親密界線、心理轉化與危機應對；9高等教育、法律、旅行、海外、信念與世界觀；10事業、社會地位、名聲、權責與公眾形象；11朋友、社群、人脈、團隊與長期願景；12潛意識、獨處、隱藏壓力、身心休養、靈性與療癒。
 
@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     gender?: string;
     focus?: string;
     apiKey?: string;
+    language?: "zh-Hant" | "zh-Hans";
   };
   const key = body.apiKey?.trim() || process.env.DEEPSEEK_API_KEY,
     model = process.env.DEEPSEEK_MODEL || "deepseek-chat";
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model,
       messages: [
-        { role: "system", content: SYSTEM },
+        { role: "system", content: `${SYSTEM}\n本次輸出請使用${body.language === "zh-Hans" ? "簡體中文" : "繁體中文"}。` },
         {
           role: "user",
           content: JSON.stringify({
