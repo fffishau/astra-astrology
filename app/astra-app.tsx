@@ -16,6 +16,20 @@ import {
   type ChartData,
 } from "../lib/astrology";
 type Place = { id: number; label: string; latitude: number; longitude: number };
+const houseThemes = [
+  "自我與外在形象",
+  "金錢與價值觀",
+  "溝通與學習",
+  "家庭與內在根基",
+  "創造力與戀愛",
+  "日常工作與健康習慣",
+  "伴侶與一對一關係",
+  "共享資源與心理轉化",
+  "遠行、進修與世界觀",
+  "事業與社會角色",
+  "朋友、社群與願景",
+  "潛意識、休養與療癒",
+];
 const focusOptions = ["整體", "副業方向", "財運", "工作", "事業", "感情與姻緣"],
   glyphs = [
     "♈",
@@ -442,6 +456,29 @@ export default function AstraApp() {
                 </div>
               ))}
             </div>
+          </details>
+          <details className="empty-houses" open>
+            <summary>
+              空宮與人生節奏 <ChevronDown />
+            </summary>
+            <p className="empty-houses-intro">
+              空宮不是缺少，也不代表這個領域不會發生事情。它只是顯示：你通常不必長期在這裡承載同等密度的內在拉扯，較可能在需要時自然回應，不必預先反覆內耗。
+            </p>
+            <div className="empty-house-list">
+              {houseThemes.map((theme, index) => {
+                const house = index + 1;
+                if (chart.points.some((point) => point.house === house)) return null;
+                return (
+                  <div key={house}>
+                    <b>第 {house} 宮</b>
+                    <span>{theme}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="empty-houses-note">
+              更完整的判讀仍會參考宮頭星座、宮主星、相位與行運；因此空宮不是保證順利，而是一種能量分配的提示。
+            </p>
           </details>
         </section>
       )}
